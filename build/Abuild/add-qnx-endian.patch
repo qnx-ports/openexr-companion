@@ -1,0 +1,35 @@
+diff --git a/src/lib/OpenEXRCore/internal_xdr.h b/src/lib/OpenEXRCore/internal_xdr.h
+index 2c394b2..9e1ceb3 100644
+--- a/src/lib/OpenEXRCore/internal_xdr.h
++++ b/src/lib/OpenEXRCore/internal_xdr.h
+@@ -69,6 +69,17 @@
+ #    include <sys/endian.h>
+ #    define EXR_HOST_IS_NOT_LITTLE_ENDIAN (__BYTE_ORDER != __LITTLE_ENDIAN)
+ 
++#elif defined(__QNX__)
++
++#    include <qh/endian.h>
++#    define EXR_HOST_IS_NOT_LITTLE_ENDIAN 0
++#    define htole16(x) ENDIAN_HTOLE16(x)
++#    define le16toh(x) ENDIAN_LE16TOH(x)
++#    define htole32(x) ENDIAN_HTOLE32(x)
++#    define le32toh(x) ENDIAN_LE32TOH(x)
++#    define htole64(x) ENDIAN_HTOLE64(x)
++#    define le64toh(x) ENDIAN_LE64TOH(x)
++
+ #else
+ 
+ #    include <endian.h>
+diff --git a/src/test/OpenEXRTest/bswap_32.h b/src/test/OpenEXRTest/bswap_32.h
+index 33c636b..6297afc 100644
+--- a/src/test/OpenEXRTest/bswap_32.h
++++ b/src/test/OpenEXRTest/bswap_32.h
+@@ -22,6 +22,8 @@
+ #    include <sys/types.h>
+ #    include <machine/bswap.h>
+ #    define bswap_32(x) bswap32 (x)
++#elif defined(__QNX__)
++#    define bswap_32(x) __builtin_bswap32 (x)
+ #else
+ #    include <byteswap.h>
+ #endif

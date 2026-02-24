@@ -1,0 +1,105 @@
+# Contributor: Sören Tempel <soeren+alpine@soeren-tempel.net>
+# Contributor: Holger Jaekel <holger.jaekel@gmx.de>
+# Maintainer: Mark Riedesel <mark+alpine@klowner.com>
+# QNX Maintainer: Felix Xing <fxing@qnx.com>
+
+pkgname=openexr
+pkgver=3.4.1
+pkgrel=0
+_commit_images=d45a2d5a890d6963b94479c7a644440068c37dd2
+pkgdesc="High dynamic-range image file format library"
+url="https://www.openexr.com/"
+arch="all"
+license="BSD-3-Clause"
+depends_dev="libdeflate-static"
+depends="libc++ imath"
+makedepends="
+    cmake
+    imath-dev
+    libdeflate-dev
+    qnx-libqh-dev
+    $depends_dev
+    ninja
+    clang
+    libc++-dev
+    "
+subpackages="
+    $pkgname-doc
+    $pkgname-tools
+    $pkgname-dev
+    $pkgname-libiex
+    $pkgname-libilmthread
+    $pkgname-libopenexr
+    $pkgname-libopenexrcore
+    $pkgname-libopenexrutil
+    "
+source="$pkgname-$pkgver.tar.gz::https://github.com/AcademySoftwareFoundation/openexr/archive/v$pkgver.tar.gz
+    openexr-images-$_commit_images.tar.gz::https://github.com/AcademySoftwareFoundation/openexr-images/archive/$_commit_images.tar.gz
+    add-qnx-endian.patch
+    "
+
+case "$CARCH" in
+s390x)
+    # fails a bunch of tests
+    options="$options !check"
+    ;;
+esac
+
+build() {
+    mkdir -p build/src/test/bin
+    cp -R "$srcdir"/openexr-images-$_commit_images/* build/src/test/bin/
+
+    CFLAGS="$CFLAGS -O2" \
+    CXXFLAGS="$CXXFLAGS -O2" \
+    cmake -B build -G Ninja \
+        -DCMAKE_C_COMPILER="clang" \
+        -DCMAKE_CXX_COMPILER="clang++" \
+        -DCMAKE_INSTALL_PREFIX=/usr \
+        -DCMAKE_INSTALL_LIBDIR=lib \
+        -DCMAKE_C_STANDARD=17 \
+        -DCMAKE_CXX_STANDARD=17 \
+        -DBUILD_SHARED_LIBS=True \
+        -DCMAKE_BUILD_TYPE=None \
+        -DCMAKE_SKIP_INSTALL_RPATH=ON \
+        -DBUILD_TESTING="$(want_check && echo ON || echo OFF)" \
+        $CMAKE_CROSSOPTS
+    cmake --build build
+}
+
+check() {
+    ctest --test-dir build
+}
+
+package() {
+    DESTDIR="$pkgdir" cmake --install build
+}
+
+tools() {
+    amove usr/bin
+}
+
+libiex() {
+    amove usr/lib/libIex-*.so.*
+}
+
+libilmthread() {
+    amove usr/lib/libIlmThread-*.so.*
+}
+
+libopenexr() {
+    amove usr/lib/libOpenEXR-*.so.*
+}
+
+libopenexrcore() {
+    amove usr/lib/libOpenEXRCore-*.so.*
+}
+
+libopenexrutil() {
+    amove usr/lib/libOpenEXRUtil-*.so.*
+}
+
+sha512sums="
+b3984b1ed2013ad931757140deaa57f997ee2cb147750288deb66b3df78a90658e121fa65797350494d2ed2e4ddd31f7b4e8c24ede6cb1dca0aef181e25b4382  openexr-3.4.1.tar.gz
+bbfd8e40eedd26955bc97789bfdfd556ee9ed652babc1c9c60c3cda6e5cab05a0a813323f25bc536132498a2bf3185a07020cd1170c047b72973e2be3e10fe19  openexr-images-d45a2d5a890d6963b94479c7a644440068c37dd2.tar.gz
+84e9830c0e2179d5e8ce0c6b0e67c01249b878e0f7a3a5c9c64abebeaad1b207124d281774726796935f513e2a958874d8a49f830df2e16187d5a36413a722fe  add-qnx-endian.patch
+"
