@@ -5,7 +5,7 @@
 
 pkgname=openexr
 pkgver=3.4.1
-pkgrel=0
+pkgrel=${pkgrel:-0}
 _commit_images=d45a2d5a890d6963b94479c7a644440068c37dd2
 pkgdesc="High dynamic-range image file format library"
 url="https://www.openexr.com/"
@@ -98,6 +98,7 @@ libopenexrutil() {
     amove usr/lib/libOpenEXRUtil-*.so.*
 }
 
+options="$options ${DISABLE_CHECK:+!check}"
 sha512sums="
 b3984b1ed2013ad931757140deaa57f997ee2cb147750288deb66b3df78a90658e121fa65797350494d2ed2e4ddd31f7b4e8c24ede6cb1dca0aef181e25b4382  openexr-3.4.1.tar.gz
 bbfd8e40eedd26955bc97789bfdfd556ee9ed652babc1c9c60c3cda6e5cab05a0a813323f25bc536132498a2bf3185a07020cd1170c047b72973e2be3e10fe19  openexr-images-d45a2d5a890d6963b94479c7a644440068c37dd2.tar.gz
